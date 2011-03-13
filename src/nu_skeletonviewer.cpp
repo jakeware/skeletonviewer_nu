@@ -20,6 +20,7 @@
 // PCL includes
 #include <pcl/point_types.h>
 #include <pcl_visualization/pcl_visualizer.h>
+#include <pcl/io/pcd_io.h>
 // NU includes
 #include <mapping_msgs/PolygonalMap.h>
 #include <geometry_msgs/Polygon.h>
@@ -57,7 +58,7 @@ private:
 public:
 
   Update() {
-    cloudsub_ = nh_.subscribe("input", 30, &Update::cloudcb, this);
+    cloudsub_ = nh_.subscribe("/camera/rgb/points", 30, &Update::cloudcb, this);
     skelsub_ = nh_.subscribe("/skeletons", 1, &Update::skelcb, this);
 
     boost::thread visualization_thread (&Update::viewercb, this);
@@ -76,6 +77,8 @@ public:
   }
 
   void viewercb() {
+    printf("Check2");
+    
     pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
     pcl::PointCloud<pcl::PointXYZRGB> cloud_xyz_rgb;
 
@@ -87,6 +90,7 @@ public:
     pcl_visualization::PCLVisualizer p ("Northwestern Skeleton Tracker Viewer");
 
     // Add a coordinate system to screen
+    p.setBackgroundColor (0, 0, 0);
     p.addCoordinateSystem (0.1);
 
     while (true) {
@@ -106,42 +110,101 @@ public:
       if (pcl::getFieldIndex (*cloud_, "rgb") != -1) {
 	rgb = true;
 	pcl::fromROSMsg (*cloud_, cloud_xyz_rgb);
-
-      // // add wireframe to viewer
-      // p.addPolygon (cloud_xyz_rgb, 1.0, 0.0, 0.0, "polygon", 0);
-      // p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 10, "polygon");
-  
-      // p.addLine<PointXYZ, PointXYZ> (cloud_xyz_rgb.points[0], cloud_xyz_rgb.points[1], 0.0, 1.0, 0.0);
-      // p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 50, "line");
-
-      // p.addSphere<PointXYZ> (cloud_xyz_rgb.points[0], 1, 0.0, 1.0, 0.0);
-      // p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "sphere");
       }
       else {
 	rgb = false;
 	pcl::fromROSMsg (*cloud_, cloud_xyz);
 	pcl::getFields (cloud_xyz, fields);
-
-
-      // // add wireframe to viewer
-      // p.addPolygon (cloud_xyz, 1.0, 0.0, 0.0, "polygon", 0);
-      // p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 10, "polygon");
-  
-      // p.addLine<PointXYZ, PointXYZ> (cloud_xyz.points[0], cloud_xyz.points[1], 0.0, 1.0, 0.0);
-      // p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 50, "line");
-
-      // p.addSphere<PointXYZ> (cloud_xyz.points[0], 1, 0.0, 1.0, 0.0);
-      // p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "sphere");
       }
       cloud_old_ = cloud_;
       m.unlock ();
 
       p.removePointCloud ("cloud");
+      p.removeShape ("head");
+      p.removeShape ("right shoulder");
+      p.removeShape ("left shoulder");
+      p.removeShape ("right elbow");
+      p.removeShape ("left elbow");
+      p.removeShape ("right hand");
+      p.removeShape ("left hand");
+      p.removeShape ("torso");
+      p.removeShape ("right hip");
+      p.removeShape ("left hip");
+      p.removeShape ("right knee");
+      p.removeShape ("left knee");
+      p.removeShape ("right foot");
+      p.removeShape ("left foot");
     
+      PointCloud<PointXYZ> testcloud;
+      
+      testcloud.points.resize (5);
+      for (size_t i = 0; i < testcloud.points.size (); ++i) {
+	testcloud.points[i].x = i; testcloud.points[i].y = i / 2; testcloud.points[i].z = 0;
+      }
+	
       // If no RGB data present, use a simpler white handler
       if (rgb && pcl::getFieldIndex (cloud_xyz_rgb, "rgb", fields) != -1) {
 	pcl_visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> color_handler (cloud_xyz_rgb);
 	p.addPointCloud (cloud_xyz_rgb, color_handler, "cloud");
+
+	// add wireframe to viewer if data is being trasmitted
+	if (&skels_.size() =! 0) {
+	  // add head
+	  p.addLine<PointXYZ, PointXYZ> (skels_[0].head.transform.translation, skels_[0].neck.transform.translation, 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "head");
+
+	  // add right shoulder
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "right shoulder");
+
+	  // add left shoulder
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "left shoulder");
+
+	  // add right elbow
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "right elbow");
+
+	  // add left elbow
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "left elbow");
+
+	  // add right hand
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "right hand");
+
+	  // add left hand
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "left hand");
+
+	  // add torso
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "torso");
+
+	  // add right hip
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "right hip");
+
+	  // add left hip
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "left hip");
+
+	  // add right knee
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "right knee");
+
+	  // add left knee
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "left knee");
+
+	  // add right foot
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "right foot");
+	  
+	  // add left foot
+	  p.addLine<PointXYZ, PointXYZ> (testcloud.points[0], testcloud.points[1], 0.0, 1.0, 0.0);
+	  p.setShapeRenderingProperties (pcl_visualization::PCL_VISUALIZER_LINE_WIDTH, 5, "left foot");	
+	}
       }
       else {
 	pcl_visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color_handler (cloud_xyz, 255, 0, 255);
@@ -158,19 +221,21 @@ public:
 
 int main (int argc, char** argv)
 {
-  ros::init (argc, argv, "openni_viewer", ros::init_options::NoSigintHandler);
+  ros::init (argc, argv, "nu_skeletonviewer", ros::init_options::NoSigintHandler);
   ros::NodeHandle nh ("~");
 
-  Update update;
-
   signal (SIGINT, sigIntHandler);
+
+  printf("Check1");
+
+  Update update;
 
   // Spin
   ros::spin ();
 
-  printf("Check1");
+  printf("Check3");
 
   // Join, delete, exit
-  //visualization_thread.join ();
+  // visualization_thread.join ();
   return (0);
 }
