@@ -1,0 +1,177 @@
+/*****************************************************************************
+*                                                                            *
+*  OpenNI 1.0 Alpha                                                          *
+*  Copyright (C) 2010 PrimeSense Ltd.                                        *
+*                                                                            *
+*  This file is part of OpenNI.                                              *
+*                                                                            *
+*  OpenNI is free software: you can redistribute it and/or modify            *
+*  it under the terms of the GNU Lesser General Public License as published  *
+*  by the Free Software Foundation, either version 3 of the License, or      *
+*  (at your option) any later version.                                       *
+*                                                                            *
+*  OpenNI is distributed in the hope that it will be useful,                 *
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of            *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              *
+*  GNU Lesser General Public License for more details.                       *
+*                                                                            *
+*  You should have received a copy of the GNU Lesser General Public License  *
+*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.            *
+*                                                                            *
+*****************************************************************************/
+
+
+
+//---------------------------------------------------------------------------
+// Includes
+//---------------------------------------------------------------------------
+#include <ros/ros.h>
+#include <ros/package.h>
+
+#include <mapping_msgs/PolygonalMap.h>
+#include <geometry_msgs/Polygon.h>
+
+
+#include "nu_scenedrawer.h"
+#include "nu_scenedrawer.cpp"
+
+#include <GL/glut.h>
+
+
+//---------------------------------------------------------------------------
+// Globals
+//---------------------------------------------------------------------------
+#define GL_WIN_SIZE_X 720  // opengl window width
+#define GL_WIN_SIZE_Y 480  // opengl window height
+
+
+//---------------------------------------------------------------------------
+// Functions
+//---------------------------------------------------------------------------
+
+// setup opengl, get skeleton points, get polygonal maps, and publish to ros
+// this function is called each frame
+void glutDisplay (void)
+{
+  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear buffers (GL_COLOR_BUFFER_BIT and GL_DEPTH_BUFFER_BIT to preset values
+
+  // Setup the OpenGL viewpoint
+  glMatrixMode(GL_PROJECTION);  // specifies the GL_PROJECTION matrix as the target matrix for subsequent matrix operations
+  glPushMatrix();  // sets the matrix on top of the stack to be identical to the one below it
+  glLoadIdentity();  // sets the matrix on top of the stack to be the identity matrix
+
+  xn::SceneMetaData sceneMD;
+  xn::DepthMetaData depthMD;
+  g_DepthGenerator.GetMetaData(depthMD);
+
+  // glOrtho: multiplies the current matrix with an orthogonal matrix
+  // arg1: coordinates of left clipping plane (0)
+  // arg2: coordinates of right clipping plane (depthMD.XRes())
+  // arg3: coordinates of bottom clipping plane (depthMD.YRes())
+  // arg4: coordinates of top clipping plane (0)
+  // arg5: nearer clipping plane (-1.0)
+  // arg6: farther clipping plane (1.0)
+  glOrtho(0, depthMD.XRes(), depthMD.YRes(), 0, -1.0, 1.0);
+
+  glDisable(GL_TEXTURE_2D);  // disable two dimensional texturing
+
+  std::vector<mapping_msgs::PolygonalMap> pmaps;  // create a vector of PolygonalMap variables called pmaps
+  
+  glutSwapBuffers();  // swap the buffers from the back buffer to the current window
+}
+
+
+// redisplay the current data because no new data is available
+void glutIdle (void)
+{
+  // Display the frame
+  glutPostRedisplay();  // marks the current window as needing to be redisplayed
+}
+
+
+// keyboard shortcuts that choose what to display in the viewer
+void glutKeyboard (unsigned char key, int x, int y)
+{
+  switch (key)
+    {
+    case 27:
+      // Exit
+ 
+    case 'b':
+      // Draw background?
+ 
+      break;
+    case 'x':
+      // Draw pixels at all?
+ 
+      break;
+    case 's':
+      // Draw Skeleton?
+ 
+      break;
+    case 'i':
+      // Print label?
+ 
+      break;
+    case 'l':
+      // Print ID & state as label, or only ID?
+ 
+      break;
+    case'p':
+      // Pause?
+ 
+      break;
+    }
+}
+
+
+void glInit (int * pargc, char ** argv)
+{
+  // glutInit: initialize the glut library and take in argc and argv from main
+  // arg1: number of command line arguments
+  // arg2: array of command line arguments
+  glutInit(pargc, argv);  
+
+  // glutInitDisplayMode: sets the display mode 
+  // arg1: bitmask for opengl display modes
+  // GLUT_RGB: bit mask to select an RGBA mode window
+  // GLUT_DOUBLE: bit mask to select a double buffered window
+  // GLUT_DEPTH: bit mask to select a window with a depth buffer
+  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);  
+
+  // glutInitWindowSize: sets window size
+  // arg1: window width (defined at top)
+  // arg2: window height (defined at top)
+  glutInitWindowSize(GL_WIN_SIZE_X, GL_WIN_SIZE_Y);
+
+  glutCreateWindow ("Prime Sense User Tracker Viewer");  // creates a top-level window
+  //glutFullScreen();  // makes window full screen
+  glutSetCursor(GLUT_CURSOR_NONE);  // changes the cursor image of the current window to invisible
+  glutKeyboardFunc(glutKeyboard);  // sets the keyboard callback for the current window
+  glutDisplayFunc(glutDisplay); // sets the display callback function for the current window
+  glutIdleFunc(glutIdle);  // sets the global idle callback
+
+  glDisable(GL_DEPTH_TEST);  // disable depth comparisons and do not update the depth buffer
+  glEnable(GL_TEXTURE_2D);  // enable 2D shading
+  glEnableClientState(GL_VERTEX_ARRAY);  // enable the vertex array is enabled for writing and used during rendering
+  glDisableClientState(GL_COLOR_ARRAY);  // disable color arrays
+}
+
+
+//---------------------------------------------------------------------------
+// MAIN
+//---------------------------------------------------------------------------
+
+int main(int argc, char **argv)
+{
+  sleep(10);  // pause for 10 seconds to let openni_camera startup
+
+  ros::init(argc, argv, "skeletonviewer");  // initialize ros node, take in argc and argv from main, and name it NUTracker
+  ros::NodeHandle nh_;  // start ros node
+
+  // create ros subscriber for the PolygonalMaps being published by 
+  sub_=n_.subscribe("/camera/depth/points2", 1, &HandDetector::cloudcb, this);
+
+  glInit(&argc, argv);  // initialize opengl and pass it the number of command line arguments and numbers
+  glutMainLoop();  // start opengl main loop and stay there forever
+}

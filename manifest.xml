@@ -1,0 +1,36 @@
+<package>
+  <description brief="nu_skeletonviewer">
+
+     A package for viewing nu_skeletonviewer pmaps or frames with a pcl background from openni_camera.  Created by John Ware and Jarvis Schultz at Northwestern University.  Based on work done by WIllow Labs and MIT.
+
+  </description>
+  <author>John Ware</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/nu_skeletonviewer</url>
+
+  <depend package="pcl_ros" />
+  <depend package="pcl_visualization" />
+  <depend package="openni_camera" />
+  <depend package="nodelet" />
+  <depend package="nu_skeletonmsgs" />
+
+  <depend package="eigen"/>
+  <depend package="pcl"/>
+  <depend package="pcl_ros"/>
+  <depend package="wxpropgrid"/> 
+  <depend package="terminal_tools"/> 
+
+  <rosdep name="wxwidgets"/>
+  <rosdep name="libtiff"/>
+  <rosdep name="libvtk"/>
+  <rosdep name="cmake"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -openni_pcl_nodelets" />
+    <nodelet plugin="${prefix}/openni_pcl_nodelets.xml" />
+  </export>
+
+</package>
+
+

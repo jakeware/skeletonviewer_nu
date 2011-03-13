@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="nu_skeletonviewer" type="nu_skeletonviewer" name="skeletonviewer" output="screen">
+    <remap from="~input" to="/camera/depth/points" />
+  </node>
+</launch>
+
