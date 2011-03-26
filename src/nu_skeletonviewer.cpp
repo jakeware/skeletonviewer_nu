@@ -90,8 +90,6 @@ public:
   }
 
   void viewercb() {
-    printf("Check2");
-    
     pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
     pcl::PointCloud<pcl::PointXYZRGB> cloud_xyz_rgb;
 
@@ -117,22 +115,22 @@ public:
       if (cloud_old_ == cloud_)
 	continue;
     
-      m.lock ();
+      // m.lock ();
     
-      // Convert to PointCloud<T>
-      if (pcl::getFieldIndex (*cloud_, "rgb") != -1) {
-	rgb = true;
-	pcl::fromROSMsg (*cloud_, cloud_xyz_rgb);
-      }
-      else {
-	rgb = false;
-	pcl::fromROSMsg (*cloud_, cloud_xyz);
-	pcl::getFields (cloud_xyz, fields);
-      }
-      cloud_old_ = cloud_;
-      m.unlock ();
+      // // Convert to PointCloud<T>
+      // if (pcl::getFieldIndex (*cloud_, "rgb") != -1) {
+      // 	rgb = true;
+      // 	pcl::fromROSMsg (*cloud_, cloud_xyz_rgb);
+      // }
+      // else {
+      // 	rgb = false;
+      // 	pcl::fromROSMsg (*cloud_, cloud_xyz);
+      // 	pcl::getFields (cloud_xyz, fields);
+      // }
+      // cloud_old_ = cloud_;
+      // m.unlock ();
 
-      p.removePointCloud ("cloud");
+      // p.removePointCloud ("cloud");
       p.removeShape ("head");
       p.removeShape ("right shoulder");
       p.removeShape ("left shoulder");
@@ -151,7 +149,8 @@ public:
       p.removeShape ("left foot");
             
       // If no RGB data present, use a simpler white handler
-      if (rgb && pcl::getFieldIndex (cloud_xyz_rgb, "rgb", fields) != -1) {
+      if(false){
+      // if (rgb && pcl::getFieldIndex (cloud_xyz_rgb, "rgb", fields) != -1) {
 	pcl_visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> color_handler (cloud_xyz_rgb);
 	p.addPointCloud (cloud_xyz_rgb, color_handler, "cloud");
 
@@ -219,8 +218,8 @@ public:
 	}
       }
       else {
-	pcl_visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color_handler (cloud_xyz, 255, 0, 255);
-	p.addPointCloud (cloud_xyz, color_handler, "cloud");
+	// pcl_visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color_handler (cloud_xyz, 255, 0, 255);
+	// p.addPointCloud (cloud_xyz, color_handler, "cloud");
 
 	// add wireframe to viewer if data is being trasmitted
 	if (gotskel) {
@@ -301,14 +300,14 @@ int main (int argc, char** argv)
 
   signal (SIGINT, sigIntHandler);
 
-  printf("Check1");
+  printf("Check1\n");
 
   Update update;
 
   // Spin
   ros::spin ();
 
-  printf("Check3");
+  printf("Check3\n");
 
   // Join, delete, exit
   // visualization_thread.join ();
