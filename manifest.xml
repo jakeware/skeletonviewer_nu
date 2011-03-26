@@ -7,13 +7,13 @@
   <author>John Ware</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/nu_skeletonviewer</url>
+  <url>http://ros.org/wiki/skeletonviewer_nu</url>
 
   <depend package="pcl_ros" />
   <depend package="pcl_visualization" />
   <depend package="openni_camera" />
   <depend package="nodelet" />
-  <depend package="nu_skeletonmsgs" />
+  <depend package="skeletonmsgs_nu" />
 
   <depend package="eigen"/>
   <depend package="pcl"/>

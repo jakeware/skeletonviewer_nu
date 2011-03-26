@@ -24,7 +24,7 @@
 // NU includes
 #include <mapping_msgs/PolygonalMap.h>
 #include <geometry_msgs/Polygon.h>
-#include <nu_skeletonmsgs/Skeletons.h>
+#include <skeletonmsgs_nu/Skeletons.h>
 
 using pcl::PointCloud;
 using pcl::PointXYZ;
@@ -36,7 +36,7 @@ using pcl::PointXYZ;
 
 // Global data
 sensor_msgs::PointCloud2ConstPtr cloud_, cloud_old_;
-nu_skeletonmsgs::Skeletons skels_;
+skeletonmsgs_nu::Skeletons skels_;
 boost::mutex m;
 bool gotskel = false;
 
@@ -65,7 +65,7 @@ public:
     boost::thread visualization_thread (&Update::viewercb, this);
   }
 
-  pcl::PointXYZ getjoint(const nu_skeletonmsgs::SkeletonJoint &skeljoint) {
+  pcl::PointXYZ getjoint(const skeletonmsgs_nu::SkeletonJoint &skeljoint) {
     pcl::PointXYZ joint_position;
       
     joint_position.x = skeljoint.transform.translation.x;
@@ -81,7 +81,7 @@ public:
     m.unlock ();
   }
   
-  void skelcb(const nu_skeletonmsgs::Skeletons skels) {
+  void skelcb(const skeletonmsgs_nu::Skeletons skels) {
     m.lock ();
     skels_ = skels;
     m.unlock();
