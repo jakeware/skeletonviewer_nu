@@ -9,6 +9,11 @@ add_definitions (-Wall -O3 -pipe -funroll-loops)
 rosbuild_add_boost_directories ()
 rosbuild_check_for_sse ()
 
+## add eigen functionality
+find_package(Eigen REQUIRED)
+include_directories(${EIGEN_INCLUDE_DIRS})
+add_definitions(${EIGEN_DEFINITIONS})
+
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 

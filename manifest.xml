@@ -10,16 +10,14 @@
   <url>http://ros.org/wiki/skeletonviewer_nu</url>
 
   <depend package="pcl_ros" />
-  <depend package="pcl_visualization" />
   <depend package="openni_camera" />
   <depend package="nodelet" />
   <depend package="skeletonmsgs_nu" />
 
-  <depend package="eigen"/>
   <depend package="pcl"/>
   <depend package="pcl_ros"/>
-  <depend package="wxpropgrid"/> 
-  <depend package="terminal_tools"/> 
+  <!-- <depend package="wxpropgrid"/>  -->
+  <!-- <depend package="terminal_tools"/>  -->
 
   <rosdep name="wxwidgets"/>
   <rosdep name="libtiff"/>
